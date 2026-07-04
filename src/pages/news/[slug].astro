@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import Datasheet from '../../layouts/Datasheet.astro';
 
 export async function getStaticPaths() {
   const notes = (await getCollection('news')).filter((e) => e.data.kind !== 'release');
@@ -11,106 +12,47 @@ const { Content } = await render(entry);
 const iso = entry.data.date.toISOString().slice(0, 10);
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#d70000" />
-    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
-    <title>{entry.data.title} — EduMIPS64</title>
-    <meta name="description" content={entry.data.excerpt ?? `EduMIPS64 application note, ${iso}.`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Fragment+Mono&family=Source+Sans+3:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="wrap topbar-inner">
-        <a class="wordmark" href="/">EduMIPS<b>64</b></a>
-        <span class="doc-ref">APPLICATION NOTE</span>
-        <nav>
-          <a href="/#notes">5. Notes</a>
-          <a href="/#news">6. Revisions</a>
-          <a href="https://github.com/EduMIPS64/edumips64">GitHub</a>
-        </nav>
+<Datasheet
+  title={`${entry.data.title} — EduMIPS64`}
+  description={entry.data.excerpt ?? `EduMIPS64 application note, ${iso}.`}
+  docRef="APPLICATION NOTE"
+>
+  <main class="wrap">
+    <article>
+      <p class="kicker">Application note · <time datetime={iso}>{iso}</time></p>
+      <h1>{entry.data.title}</h1>
+      {entry.data.source && (
+        <p class="provenance">First published on the EduMIPS64 development blog.</p>
+      )}
+      <div class="prose">
+        <Content />
       </div>
-    </header>
+    </article>
+    <p class="backlink"><a href="/news/">← All application notes</a></p>
+  </main>
+</Datasheet>
 
-    <main class="wrap">
-      <article>
-        <p class="kicker">Application note · <time datetime={iso}>{iso}</time></p>
-        <h1>{entry.data.title}</h1>
-        {entry.data.source && (
-          <p class="provenance">First published on the EduMIPS64 development blog.</p>
-        )}
-        <div class="prose">
-          <Content />
-        </div>
-      </article>
-      <p class="backlink"><a href="/#notes">← All application notes</a></p>
-    </main>
-
-    <footer class="site-footer">
-      <div class="wrap footer-inner">
-        <span>EduMIPS64 — free software, released under the GPL ·
-          <a href="https://github.com/EduMIPS64/www.edumips.org">website source on GitHub</a></span>
-      </div>
-    </footer>
-
-    <style>
-      :root {
-        --paper: #fbfbf9;
-        --ink: #16181d;
-        --body-ink: #3a4048;
-        --steel: #5a6270;
-        --hairline: #dcdee3;
-        --red: #d70000;
-        --display: 'Archivo', system-ui, sans-serif;
-        --body: 'Source Sans 3', system-ui, sans-serif;
-        --mono: 'Fragment Mono', ui-monospace, monospace;
-      }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body {
-        background: var(--paper); color: var(--ink);
-        font-family: var(--body); font-size: 16.5px; line-height: 1.6;
-        -webkit-font-smoothing: antialiased;
-      }
-      a { color: var(--ink); text-decoration-color: var(--red); text-underline-offset: 2px; }
-      a:hover { color: var(--red); }
-      .wrap { max-width: 760px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
-
-      .topbar { border-bottom: 2px solid var(--ink); }
-      .topbar-inner { display: flex; align-items: baseline; gap: 24px; padding: 16px 24px; }
-      .wordmark { font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: -.02em; text-decoration: none; color: var(--ink); }
-      .wordmark b { color: var(--red); }
-      .doc-ref { font-family: var(--mono); font-size: 12px; color: var(--steel); }
-      .topbar nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
-      .topbar nav a { font-family: var(--mono); font-size: 13px; color: var(--steel); text-decoration: none; }
-      .topbar nav a:hover { color: var(--red); }
-
-      main { padding-top: 56px; }
-      .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--red); margin-bottom: 14px; }
-      h1 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; letter-spacing: -.02em; margin-bottom: 10px; }
-      .provenance { font-family: var(--mono); font-size: 12px; color: var(--steel); margin-bottom: 8px; }
-      .prose { margin-top: 24px; color: var(--body-ink); }
-      .prose :global(p) { margin: 0 0 14px; max-width: 68ch; }
-      .prose :global(h2), .prose :global(h3) { font-family: var(--display); color: var(--ink); margin: 26px 0 8px; }
-      .prose :global(ul), .prose :global(ol) { margin: 0 0 14px 22px; }
-      .prose :global(li) { margin-bottom: 4px; }
-      .prose :global(code) { font-family: var(--mono); font-size: 13.5px; }
-      .prose :global(pre) { border: 1px solid var(--ink); background: #fff; padding: 16px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7; margin: 0 0 14px; }
-      .prose :global(img) { max-width: 100%; height: auto; }
-      .backlink { font-family: var(--mono); font-size: 13px; margin: 40px 0 0; }
-
-      .site-footer { border-top: 2px solid var(--ink); margin-top: 64px; }
-      .footer-inner { padding-top: 20px; padding-bottom: 36px; font-family: var(--mono); font-size: 12px; color: var(--steel); }
-      .site-footer a { color: var(--steel); }
-
-      @media (max-width: 560px) { .doc-ref { display: none; } }
-    </style>
-  </body>
-</html>
+<style>
+  main { padding-top: 56px; max-width: 760px; }
+  h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(28px, 4vw, 40px); line-height: 1.1; letter-spacing: -.02em;
+    margin-bottom: 10px;
+  }
+  .provenance { font-family: var(--mono); font-size: 12px; color: var(--steel); margin-bottom: 8px; }
+  .prose { margin-top: 24px; color: var(--body-ink); }
+  .prose :global(p) { margin: 0 0 14px; max-width: 68ch; }
+  .prose :global(h2), .prose :global(h3) { font-family: var(--display); color: var(--ink); margin: 26px 0 8px; }
+  .prose :global(ul), .prose :global(ol) { margin: 0 0 14px 22px; }
+  .prose :global(li) { margin-bottom: 4px; }
+  .prose :global(code) { font-family: var(--mono); font-size: 13.5px; }
+  .prose :global(pre) {
+    border: 1px solid var(--ink); background: var(--panel); padding: 16px; overflow-x: auto;
+    font-family: var(--mono); font-size: 13px; line-height: 1.7; margin: 0 0 14px;
+  }
+  .prose :global(pre code) { font-size: 13px; }
+  .prose :global(img) { max-width: 100%; height: auto; }
+  .prose :global(a) { color: var(--ink); }
+  .prose :global(a:hover) { color: var(--red); }
+  .backlink { font-family: var(--mono); font-size: 13px; margin: 40px 0 0; }
+</style>

@@ -1,0 +1,56 @@
+---
+import { getCollection, render } from 'astro:content';
+
+interface Props {
+  limit?: number;
+}
+const { limit } = Astro.props;
+
+const notes = (await getCollection('news'))
+  .filter((e) => e.data.kind !== 'release')
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const shown = limit ? notes.slice(0, limit) : notes;
+const items = await Promise.all(
+  shown.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+);
+
+const isoDate = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+<div class="notes-list">
+  {
+    items.map(({ entry, Content }) => (
+      <article class="note-item">
+        <time datetime={isoDate(entry.data.date)}>{isoDate(entry.data.date)}</time>
+        <div class="note-body">
+          <h3><a href={`/news/${entry.id}/`}>{entry.data.title}</a></h3>
+          {entry.data.excerpt
+            ? <p>{entry.data.excerpt} <a class="more" href={`/news/${entry.id}/`}>Read more →</a></p>
+            : <div class="note-content"><Content /></div>}
+        </div>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .notes-list { display: grid; gap: 0; }
+  .note-item {
+    display: grid; grid-template-columns: 110px 1fr; gap: 20px;
+    padding: 16px 0; border-bottom: 1px solid var(--hairline);
+  }
+  .note-item:first-child { padding-top: 0; }
+  .note-item time { font-family: var(--mono); font-size: 12.5px; color: var(--steel); padding-top: 3px; }
+  .note-body h3 { font-family: var(--display); font-weight: 700; font-size: 16.5px; margin-bottom: 4px; }
+  .note-body h3 a { text-decoration: none; }
+  .note-body h3 a:hover { color: var(--red); text-decoration: underline; text-decoration-color: var(--red); }
+  .note-body p, .note-content { font-size: 15px; color: var(--body-ink); max-width: 68ch; }
+  .note-content :global(p) { margin: 0 0 6px; }
+  .note-content :global(p:last-child) { margin-bottom: 0; }
+  .more { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+
+  @media (max-width: 560px) {
+    .note-item { grid-template-columns: 1fr; gap: 2px; }
+  }
+</style>

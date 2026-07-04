@@ -1,161 +1,119 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
+import Datasheet from '../layouts/Datasheet.astro';
+import RevTable from '../components/RevTable.astro';
+import NotesList from '../components/NotesList.astro';
 
-const allNews = await getCollection('news');
-allNews.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-
-const releases = allNews.filter((e) => e.data.kind === 'release');
-const notes = allNews.filter((e) => e.data.kind !== 'release');
-
-const releasesRendered = await Promise.all(
-  releases.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
-);
-const notesRendered = await Promise.all(
-  notes.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
-);
-
-// Datasheet "revision history" columns, parsed from titles like
-// "Release 1.4.0 (codename: WalkOfLife)".
-function revMeta(title: string) {
-  const m = title.match(/Release\s+([\d.]+)(?:\s*\(codename:\s*(.+?)\))?/i);
-  return { rev: m?.[1] ?? '—', codename: m?.[2] ?? '—' };
-}
-
-const isoDate = (d: Date) => d.toISOString().slice(0, 10);
+const all = await getCollection('news');
+const releaseCount = all.filter((e) => e.data.kind === 'release').length;
+const noteCount = all.length - releaseCount;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#d70000" />
-    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
-    <title>EduMIPS64 — a MIPS64 CPU on your screen</title>
-    <meta
-      name="description"
-      content="EduMIPS64 is a free, visual MIPS64 CPU simulator built for Computer Architecture courses. Write assembly, run it cycle by cycle, inspect the pipeline, registers, memory and caches."
-    />
-    <meta property="og:title" content="EduMIPS64 — the visual MIPS64 CPU simulator" />
+<Datasheet
+  title="EduMIPS64 — a MIPS64 CPU on your screen"
+  description="EduMIPS64 is a free, visual MIPS64 CPU simulator built for Computer Architecture courses. Write assembly, run it cycle by cycle, inspect the pipeline, registers, memory and caches."
+>
+  <Fragment slot="head">
+    <meta property="og:title" content="EduMIPS64 — a MIPS64 CPU on your screen" />
     <meta property="og:description" content="Write MIPS64 assembly and see every cycle: pipeline, registers, memory, stalls and caches. Free, cross-platform, made for learning." />
-    <meta property="og:image" content="https://www.edumips.org/edumips64-1.3.0.png" />
+    <meta property="og:image" content="https://www.edumips.org/screenshot-web.png" />
     <meta property="og:url" content="https://www.edumips.org/" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Fragment+Mono&family=Source+Sans+3:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="wrap topbar-inner">
-        <a class="wordmark" href="/">EduMIPS<b>64</b></a>
-        <span class="doc-ref">DS-1.4.0 · MIPS64 CPU SIMULATOR</span>
-        <nav>
-          <a href="#features">2. Features</a>
-          <a href="#how-it-works">3. Operation</a>
-          <a href="#notes">5. Notes</a>
-          <a href="#news">6. Revisions</a>
-          <a href="https://github.com/EduMIPS64/edumips64">GitHub</a>
-        </nav>
-      </div>
-    </header>
+  </Fragment>
 
-    <main>
-      <section class="wrap hero">
-        <div>
-          <p class="kicker">1. General description · free software · <b>GPL · est. 2006</b></p>
-          <h1>A MIPS64 CPU, <em>on your screen.</em></h1>
-          <p class="lede">
-            EduMIPS64 is a visual MIPS64 processor simulator for Computer Architecture
-            courses. Write assembly, execute it cycle by cycle, and inspect the pipeline,
-            registers, memory and caches while it runs.
-          </p>
-          <div class="cta-row">
-            <a class="btn btn-primary" href="https://web.edumips.org">Try it online</a>
-            <a class="btn" href="https://github.com/EduMIPS64/edumips64/releases/latest">Download 1.4.0</a>
-          </div>
-          <p class="cta-note">
-            Desktop app for Windows, macOS &amp; Linux · single JAR · CLI ·
-            <a href="https://github.com/EduMIPS64/edumips64/releases/download/v1.4.0/EduMIPS64-manual-en.pdf">manual (PDF)</a>
-          </p>
+  <main>
+    <section class="wrap hero">
+      <div>
+        <p class="kicker">1. General description · free software · <b>GPL · est. 2006</b></p>
+        <h1>A MIPS64 CPU, <em>on your screen.</em></h1>
+        <p class="lede">
+          EduMIPS64 is a visual MIPS64 processor simulator for Computer Architecture
+          courses. Write assembly, execute it cycle by cycle, and inspect the pipeline,
+          registers, memory and caches while it runs.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://web.edumips.org">Try it online</a>
+          <a class="btn" href="https://github.com/EduMIPS64/edumips64/releases/latest">Download 1.4.0</a>
         </div>
+        <p class="cta-note">
+          Desktop app for Windows, macOS &amp; Linux · single JAR · CLI ·
+          <a href="https://github.com/EduMIPS64/edumips64/releases/download/v1.4.0/EduMIPS64-manual-en.pdf">manual (PDF)</a>
+        </p>
+      </div>
 
-        <figure class="hero-fig">
-          <a class="shot-box" href="https://web.edumips.org">
-            <img
-              src="/screenshot-web.png"
-              alt="The EduMIPS64 web version running a program: source code with the pipeline stages of each instruction highlighted, execution statistics, and the CPU pipeline diagram"
-              width="1710"
-              height="1231"
-              loading="eager"
-            />
-          </a>
-          <figcaption>Fig. 1 — The web version at web.edumips.org, mid-execution: pipeline stages highlighted in the source, live statistics and the CPU diagram.</figcaption>
-        </figure>
-      </section>
+      <figure class="hero-fig">
+        <a class="shot-box" href="https://web.edumips.org">
+          <img
+            src="/screenshot-web.png"
+            alt="The EduMIPS64 web version running a program: source code with the pipeline stages of each instruction highlighted, execution statistics, and the CPU pipeline diagram"
+            width="1710"
+            height="1231"
+            loading="eager"
+          />
+        </a>
+        <figcaption>Fig. 1 — The web version at web.edumips.org, mid-execution: pipeline stages highlighted in the source, live statistics and the CPU diagram.</figcaption>
+      </figure>
+    </section>
 
-      <section class="wrap" id="features">
-        <div class="secthead"><span class="num">2</span><h2>Features</h2></div>
-        <ul class="feature-list">
-          <li>
-            <h3><span class="fnum">2.1</span>Watch the pipeline</h3>
-            <p>Instructions flow through IF, ID, EX, MEM and WB — plus the FP adder,
-            multiplier and divider — in a live, color-coded view.</p>
-          </li>
-          <li>
-            <h3><span class="fnum">2.2</span>Full machine state</h3>
-            <p>Registers, memory and execution statistics update at every cycle, so cause
-            and effect are always visible.</p>
-          </li>
-          <li>
-            <h3><span class="fnum">2.3</span>Built-in cache simulator</h3>
-            <p>Configure L1 instruction and data caches — size, block size, associativity —
-            and watch hit/miss counts as your code runs. New in 1.4.0.</p>
-          </li>
-          <li>
-            <h3><span class="fnum">2.4</span>Learn hazards by seeing them</h3>
-            <p>RAW, WAW and structural stalls show up right in the cycle diagram. Toggle
-            forwarding and watch CPI change.</p>
-          </li>
-          <li>
-            <h3><span class="fnum">2.5</span>Runs everywhere</h3>
-            <p>Native desktop app for Windows, macOS and Linux, a single JAR, a scriptable
-            CLI — or nothing to install at all at
-            <a href="https://web.edumips.org">web.edumips.org</a>.</p>
-          </li>
-          <li>
-            <h3><span class="fnum">2.6</span>Made for the classroom</h3>
-            <p>Free software (GPL), UI and manuals in English, Italian and Simplified
-            Chinese, and an <a href="/edumips64-ieee-tedu.pdf">IEEE Transactions on
-            Education paper</a> behind it. Twenty years in Computer Architecture courses.</p>
-          </li>
-        </ul>
-      </section>
+    <section class="wrap" id="features">
+      <div class="secthead"><span class="num">2</span><h2>Features</h2></div>
+      <ul class="feature-list">
+        <li>
+          <h3><span class="fnum">2.1</span>Watch the pipeline</h3>
+          <p>Instructions flow through IF, ID, EX, MEM and WB — plus the FP adder,
+          multiplier and divider — in a live, color-coded view.</p>
+        </li>
+        <li>
+          <h3><span class="fnum">2.2</span>Full machine state</h3>
+          <p>Registers, memory and execution statistics update at every cycle, so cause
+          and effect are always visible.</p>
+        </li>
+        <li>
+          <h3><span class="fnum">2.3</span>Built-in cache simulator</h3>
+          <p>Configure L1 instruction and data caches — size, block size, associativity —
+          and watch hit/miss counts as your code runs. New in 1.4.0.</p>
+        </li>
+        <li>
+          <h3><span class="fnum">2.4</span>Learn hazards by seeing them</h3>
+          <p>RAW, WAW and structural stalls show up right in the cycle diagram. Toggle
+          forwarding and watch CPI change.</p>
+        </li>
+        <li>
+          <h3><span class="fnum">2.5</span>Runs everywhere</h3>
+          <p>Native desktop app for Windows, macOS and Linux, a single JAR, a scriptable
+          CLI — or nothing to install at all at
+          <a href="https://web.edumips.org">web.edumips.org</a>.</p>
+        </li>
+        <li>
+          <h3><span class="fnum">2.6</span>Made for the classroom</h3>
+          <p>Free software (GPL), UI and manuals in English, Italian and Simplified
+          Chinese, and an <a href="/edumips64-ieee-tedu.pdf">IEEE Transactions on
+          Education paper</a> behind it. Twenty years in Computer Architecture courses.</p>
+        </li>
+      </ul>
+    </section>
 
-      <section class="wrap" id="how-it-works">
-        <div class="secthead"><span class="num">3</span><h2>Typical application</h2></div>
-        <div class="how-grid">
-          <ol class="steps">
-            <li>
-              <h3>Write MIPS64 assembly</h3>
-              <p>Or open one of the bundled examples. The parser tells you exactly what's
-              wrong, and where, before anything runs.</p>
-            </li>
-            <li>
-              <h3>Run it cycle by cycle</h3>
-              <p>Single step, multi-step, or run to completion. The pipeline view and cycle
-              diagram show where every instruction is, every cycle.</p>
-            </li>
-            <li>
-              <h3>Inspect everything, then experiment</h3>
-              <p>Registers, memory, stalls, CPI, cache hits and misses. Turn forwarding on,
-              resize the cache, run it again and compare.</p>
-            </li>
-          </ol>
-          <figure class="listing">
-            <pre><code>        .data
+    <section class="wrap" id="how-it-works">
+      <div class="secthead"><span class="num">3</span><h2>Typical application</h2></div>
+      <div class="how-grid">
+        <ol class="steps">
+          <li>
+            <h3>Write MIPS64 assembly</h3>
+            <p>Or open one of the bundled examples. The parser tells you exactly what's
+            wrong, and where, before anything runs.</p>
+          </li>
+          <li>
+            <h3>Run it cycle by cycle</h3>
+            <p>Single step, multi-step, or run to completion. The pipeline view and cycle
+            diagram show where every instruction is, every cycle.</p>
+          </li>
+          <li>
+            <h3>Inspect everything, then experiment</h3>
+            <p>Registers, memory, stalls, CPI, cache hits and misses. Turn forwarding on,
+            resize the cache, run it again and compare.</p>
+          </li>
+        </ol>
+        <figure class="listing">
+          <pre><code>        .data
 vec:    .word64  1, 2, 3, 4
 
         .code
@@ -163,237 +121,117 @@ main:   daddi    r1, r0, 4
 loop:   daddi    r1, r1, -1
         bne      r1, r0, loop
         syscall  0</code></pre>
-            <figcaption>Listing 1 — loop.s</figcaption>
-          </figure>
-        </div>
-      </section>
-
-      <section class="wrap" id="project">
-        <div class="secthead"><span class="num">4</span><h2>The project</h2></div>
-        <div class="project-grid">
-          <div>
-            <h3>History</h3>
-            <p>Development started in 2006, when a group of students at the University of
-            Catania decided they didn't want to be tied to Windows to complete their
-            Computer Architecture assignments — and writing a CPU simulator from scratch
-            sounded fun. It began as a GPL Java port of WinMIPS64 and quickly became a
-            stand-alone project.</p>
-            <p>Since 2008 the simulator has been maintained by
-            <a href="https://github.com/lupino3">lupino3</a>, one of the founders. The
-            <a href="https://github.com/EduMIPS64/edumips64/blob/master/ChangeLog">ChangeLog</a>
-            tells part of the story; the earliest development happened over email, using
-            lupino3 as a human VCS.</p>
-          </div>
-          <div>
-            <h3>Contributing</h3>
-            <p>Contributions are welcome, in the spirit of free software. The simplest one:
-            <a href="https://github.com/EduMIPS64/edumips64/issues">file a bug or suggest
-            an improvement</a>. Security issues go through the public issue tracker too.</p>
-            <p>Want to write code? Start with the
-            <a href="https://github.com/EduMIPS64/edumips64/blob/master/docs/developer-guide.md">developer
-            guide</a>, then reach out to the maintainers on GitHub — they'll point you to
-            where your skills help most.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="wrap" id="notes">
-        <div class="secthead"><span class="num">5</span><h2>Application notes</h2></div>
-        <p class="section-intro">Announcements and articles from the project's twenty years.</p>
-        <div class="notes-list">
-          {
-            notesRendered.map(({ entry, Content }) => (
-              <article class="note-item">
-                <time datetime={isoDate(entry.data.date)}>{isoDate(entry.data.date)}</time>
-                <div class="note-body">
-                  <h3><a href={`/news/${entry.id}/`}>{entry.data.title}</a></h3>
-                  {entry.data.excerpt
-                    ? <p>{entry.data.excerpt} <a class="more" href={`/news/${entry.id}/`}>Read more →</a></p>
-                    : <div class="note-content"><Content /></div>}
-                </div>
-              </article>
-            ))
-          }
-        </div>
-      </section>
-
-      <section class="wrap" id="news">
-        <div class="secthead"><span class="num">6</span><h2>Revision history</h2></div>
-        <div class="table-scroll">
-          <table class="rev-table">
-            <thead>
-              <tr><th>Date</th><th>Rev</th><th>Codename</th><th>Notes</th></tr>
-            </thead>
-            <tbody>
-              {
-                releasesRendered.map(({ entry, Content }) => {
-                  const meta = revMeta(entry.data.title);
-                  return (
-                    <tr>
-                      <td class="date">
-                        <time datetime={isoDate(entry.data.date)}>{isoDate(entry.data.date)}</time>
-                      </td>
-                      <td class="ver"><b>{meta.rev}</b></td>
-                      <td class="codename">{meta.codename}</td>
-                      <td class="notes"><Content /></td>
-                    </tr>
-                  );
-                })
-              }
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="wrap footer-inner">
-        <span>EduMIPS64 — free software, released under the GPL ·
-          <a href="https://github.com/EduMIPS64/www.edumips.org">website source on GitHub</a></span>
-        <span class="page-no">www.edumips.org · page 1 of 1</span>
+          <figcaption>Listing 1 — loop.s</figcaption>
+        </figure>
       </div>
-    </footer>
+    </section>
 
-    <style>
-      :root {
-        --paper: #fbfbf9;
-        --ink: #16181d;
-        --body-ink: #3a4048;
-        --steel: #5a6270;
-        --hairline: #dcdee3;
-        --red: #d70000;
-        --display: 'Archivo', system-ui, sans-serif;
-        --body: 'Source Sans 3', system-ui, sans-serif;
-        --mono: 'Fragment Mono', ui-monospace, monospace;
-      }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      html { scroll-behavior: smooth; }
-      body {
-        background: var(--paper);
-        color: var(--ink);
-        font-family: var(--body);
-        font-size: 16.5px;
-        line-height: 1.6;
-        -webkit-font-smoothing: antialiased;
-      }
-      a { color: var(--ink); text-decoration-color: var(--red); text-underline-offset: 2px; }
-      a:hover { color: var(--red); }
-      .wrap { max-width: 1040px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+    <section class="wrap" id="project">
+      <div class="secthead"><span class="num">4</span><h2>The project</h2></div>
+      <div class="project-grid">
+        <div>
+          <h3>History</h3>
+          <p>Development started in 2006, when a group of students at the University of
+          Catania decided they didn't want to be tied to Windows to complete their
+          Computer Architecture assignments — and writing a CPU simulator from scratch
+          sounded fun. It began as a GPL Java port of WinMIPS64 and quickly became a
+          stand-alone project.</p>
+          <p>Since 2008 the simulator has been maintained by
+          <a href="https://github.com/lupino3">lupino3</a>, one of the founders. The
+          <a href="https://github.com/EduMIPS64/edumips64/blob/master/ChangeLog">ChangeLog</a>
+          tells part of the story; the earliest development happened over email, using
+          lupino3 as a human VCS.</p>
+        </div>
+        <div>
+          <h3>Contributing</h3>
+          <p>Contributions are welcome, in the spirit of free software. The simplest one:
+          <a href="https://github.com/EduMIPS64/edumips64/issues">file a bug or suggest
+          an improvement</a>. Security issues go through the public issue tracker too.</p>
+          <p>Want to write code? Start with the
+          <a href="https://github.com/EduMIPS64/edumips64/blob/master/docs/developer-guide.md">developer
+          guide</a>, then reach out to the maintainers on GitHub — they'll point you to
+          where your skills help most.</p>
+        </div>
+      </div>
+    </section>
 
-      .topbar { border-bottom: 2px solid var(--ink); }
-      .topbar-inner { display: flex; align-items: baseline; gap: 24px; padding: 16px 24px; }
-      .wordmark { font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: -.02em; text-decoration: none; color: var(--ink); }
-      .wordmark b { color: var(--red); }
-      .doc-ref { font-family: var(--mono); font-size: 12px; color: var(--steel); }
-      .topbar nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
-      .topbar nav a { font-family: var(--mono); font-size: 13px; color: var(--steel); text-decoration: none; }
-      .topbar nav a:hover { color: var(--red); }
+    <section class="wrap" id="revisions">
+      <div class="secthead">
+        <span class="num">5</span><h2>Revision history</h2>
+        <a class="all" href="/revisions/">all {releaseCount} releases →</a>
+      </div>
+      <RevTable limit={5} />
+    </section>
 
-      .hero { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: 56px; align-items: center; padding-top: 72px; padding-bottom: 40px; }
-      .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--steel); margin-bottom: 16px; }
-      .kicker b { color: var(--red); font-weight: 400; }
-      h1 { font-family: var(--display); font-weight: 800; font-size: clamp(38px, 5vw, 58px); line-height: 1.03; letter-spacing: -.03em; }
-      h1 em { font-style: normal; color: var(--red); }
-      .lede { margin: 22px 0 30px; font-size: 18px; color: var(--body-ink); max-width: 46ch; }
-      .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
-      .btn { font-family: var(--display); font-weight: 700; font-size: 15px; text-decoration: none; padding: 12px 22px; border: 2px solid var(--ink); color: var(--ink); }
-      .btn:hover { background: var(--ink); color: var(--paper); }
-      .btn-primary { background: var(--red); border-color: var(--red); color: #fff; }
-      .btn-primary:hover { background: #b00000; border-color: #b00000; color: #fff; }
-      .cta-note { font-family: var(--mono); font-size: 12px; color: var(--steel); margin-top: 14px; }
-      .cta-note a { color: var(--steel); }
-      .hero-fig figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 10px; }
+    <section class="wrap" id="notes">
+      <div class="secthead">
+        <span class="num">6</span><h2>Application notes</h2>
+        <a class="all" href="/news/">all {noteCount} notes →</a>
+      </div>
+      <p class="section-intro">Announcements and articles from the project's twenty years.</p>
+      <NotesList limit={5} />
+    </section>
+  </main>
+</Datasheet>
 
-      .shot-box { display: block; border: 1px solid var(--ink); background: #fff; }
-      .shot-box img { display: block; width: 100%; height: auto; }
+<style>
+  .hero {
+    display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+    gap: 56px; align-items: center; padding-top: 72px; padding-bottom: 40px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(38px, 5vw, 58px); line-height: 1.03; letter-spacing: -.03em;
+  }
+  h1 em { font-style: normal; color: var(--red); }
+  .lede { margin: 22px 0 30px; font-size: 18px; color: var(--body-ink); max-width: 46ch; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    font-family: var(--display); font-weight: 700; font-size: 15px;
+    text-decoration: none; padding: 12px 22px; border: 2px solid var(--ink); color: var(--ink);
+  }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  .btn-primary { background: #d70000; border-color: #d70000; color: #fff; }
+  .btn-primary:hover { background: #b00000; border-color: #b00000; color: #fff; }
+  .cta-note { font-family: var(--mono); font-size: 12px; color: var(--steel); margin-top: 14px; }
+  .cta-note a { color: var(--steel); }
+  .hero-fig figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 10px; }
+  .shot-box { display: block; border: 1px solid var(--ink); background: var(--panel); }
+  .shot-box img { display: block; width: 100%; height: auto; }
 
-      .secthead { display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid var(--ink); padding-top: 56px; padding-bottom: 10px; margin-bottom: 32px; }
-      .secthead .num { font-family: var(--mono); font-size: 15px; color: var(--red); }
-      .secthead h2 { font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: -.02em; }
+  .feature-list { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px 40px; }
+  .feature-list h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin-bottom: 6px; }
+  .fnum { font-family: var(--mono); font-weight: 400; font-size: 13px; color: var(--red); margin-right: 10px; }
+  .feature-list p { font-size: 15px; color: var(--body-ink); }
 
-      .feature-list { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px 40px; }
-      .feature-list h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin-bottom: 6px; }
-      .fnum { font-family: var(--mono); font-weight: 400; font-size: 13px; color: var(--red); margin-right: 10px; }
-      .feature-list p { font-size: 15px; color: var(--body-ink); }
+  .how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+  .steps { list-style: none; counter-reset: step; }
+  .steps li { position: relative; padding: 0 0 22px 56px; counter-increment: step; }
+  .steps li::before {
+    content: "3." counter(step);
+    position: absolute; left: 0; top: 3px;
+    font-family: var(--mono); font-size: 14px; color: var(--red);
+  }
+  .steps h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin-bottom: 4px; }
+  .steps p { font-size: 15px; color: var(--body-ink); }
+  .listing pre {
+    border: 1px solid var(--ink); padding: 20px; overflow-x: auto;
+    font-family: var(--mono); font-size: 13.5px; line-height: 1.7; background: var(--panel);
+  }
+  .listing figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 8px; }
 
-      .how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
-      .steps { list-style: none; counter-reset: step; }
-      .steps li { position: relative; padding: 0 0 22px 56px; counter-increment: step; }
-      .steps li::before {
-        content: "3." counter(step);
-        position: absolute; left: 0; top: 3px;
-        font-family: var(--mono); font-size: 14px; color: var(--red);
-      }
-      .steps h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin-bottom: 4px; }
-      .steps p { font-size: 15px; color: var(--body-ink); }
-      .listing pre {
-        border: 1px solid var(--ink); padding: 20px; overflow-x: auto;
-        font-family: var(--mono); font-size: 13.5px; line-height: 1.7; background: #fff;
-      }
-      .listing figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 8px; }
+  .project-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; }
+  .project-grid h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin-bottom: 8px; }
+  .project-grid p { font-size: 15px; color: var(--body-ink); margin-bottom: 10px; }
 
-      .project-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; }
-      .project-grid h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin-bottom: 8px; }
-      .project-grid p { font-size: 15px; color: var(--body-ink); margin-bottom: 10px; }
-
-      .section-intro { font-size: 15px; color: var(--steel); margin: -16px 0 24px; }
-      .notes-list { display: grid; gap: 0; }
-      .note-item {
-        display: grid; grid-template-columns: 110px 1fr; gap: 20px;
-        padding: 16px 0; border-bottom: 1px solid var(--hairline);
-      }
-      .note-item:first-child { padding-top: 0; }
-      .note-item time { font-family: var(--mono); font-size: 12.5px; color: var(--steel); padding-top: 3px; }
-      .note-body h3 { font-family: var(--display); font-weight: 700; font-size: 16.5px; margin-bottom: 4px; }
-      .note-body h3 a { text-decoration: none; }
-      .note-body h3 a:hover { color: var(--red); text-decoration: underline; text-decoration-color: var(--red); }
-      .note-body p, .note-content { font-size: 15px; color: var(--body-ink); max-width: 68ch; }
-      .note-content :global(p) { margin: 0 0 6px; }
-      .note-content :global(p:last-child) { margin-bottom: 0; }
-      .more { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
-
-      .table-scroll { overflow-x: auto; }
-      .rev-table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 640px; }
-      .rev-table th {
-        font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
-        text-align: left; color: var(--steel); border-bottom: 1px solid var(--ink);
-        padding: 8px 16px 8px 0; font-weight: 400;
-      }
-      .rev-table td { border-bottom: 1px solid var(--hairline); padding: 14px 16px 14px 0; vertical-align: top; }
-      .rev-table td.date { font-family: var(--mono); font-size: 13px; white-space: nowrap; color: var(--steel); }
-      .rev-table td.ver { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
-      .rev-table td.ver b { color: var(--red); font-weight: 400; }
-      .rev-table td.codename { font-size: 14px; white-space: nowrap; color: var(--body-ink); }
-      .rev-table td.notes { color: var(--body-ink); font-size: 15px; max-width: 60ch; }
-      .rev-table td.notes :global(p) { margin: 0 0 6px; }
-      .rev-table td.notes :global(p:last-child) { margin-bottom: 0; }
-      .rev-table td.notes :global(code) { font-family: var(--mono); font-size: 13px; }
-
-      .site-footer { border-top: 2px solid var(--ink); margin-top: 64px; }
-      .footer-inner {
-        display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-        padding-top: 20px; padding-bottom: 36px;
-        font-family: var(--mono); font-size: 12px; color: var(--steel);
-      }
-      .site-footer a { color: var(--steel); }
-      .page-no { color: var(--hairline); color: #b6bac2; }
-
-      @media (max-width: 900px) {
-        .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 48px; }
-        .hero-fig { max-width: 420px; margin: 0 auto; }
-        .feature-list { grid-template-columns: 1fr 1fr; }
-        .how-grid { grid-template-columns: 1fr; }
-        .project-grid { grid-template-columns: 1fr; }
-        .doc-ref { display: none; }
-      }
-      @media (max-width: 560px) {
-        .feature-list { grid-template-columns: 1fr; }
-        .topbar nav { gap: 12px; }
-        .note-item { grid-template-columns: 1fr; gap: 2px; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        html { scroll-behavior: auto; }
-      }
-    </style>
-  </body>
-</html>
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 48px; }
+    .hero-fig { max-width: 560px; }
+    .feature-list { grid-template-columns: 1fr 1fr; }
+    .how-grid { grid-template-columns: 1fr; }
+    .project-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .feature-list { grid-template-columns: 1fr; }
+  }
+</style>

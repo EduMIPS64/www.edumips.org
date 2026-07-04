@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content';
+import Datasheet from '../../layouts/Datasheet.astro';
+import NotesList from '../../components/NotesList.astro';
+
+const noteCount = (await getCollection('news')).filter((e) => e.data.kind !== 'release').length;
+---
+
+<Datasheet
+  title="Application notes — EduMIPS64"
+  description="Announcements and articles from the EduMIPS64 project, including the archive of the development blog."
+  docRef="APPLICATION NOTES"
+>
+  <main class="wrap">
+    <p class="kicker">6. Application notes</p>
+    <h1>Application notes</h1>
+    <p class="section-intro">All {noteCount} announcements and articles from the project's
+    twenty years, newest first.</p>
+    <NotesList />
+    <p class="backlink"><a href="/">← www.edumips.org</a></p>
+  </main>
+</Datasheet>
+
+<style>
+  main { padding-top: 56px; }
+  h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(28px, 4vw, 40px); line-height: 1.1; letter-spacing: -.02em;
+    margin-bottom: 24px;
+  }
+  .backlink { font-family: var(--mono); font-size: 13px; margin: 40px 0 0; }
+</style>
