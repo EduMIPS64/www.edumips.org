@@ -6,6 +6,9 @@ const news = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),
+    kind: z.enum(['release', 'note']).default('note'),
+    source: z.string().url().optional(),
+    excerpt: z.string().optional(),
   }),
 });
 

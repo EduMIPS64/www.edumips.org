@@ -1,6 +1,7 @@
 ---
 title: "Website migrated to GitHub Pages"
 date: 2015-03-14
+kind: note
 ---
 
 The VPS that hosted the web site is being turned down, so we migrated the web site to GitHub pages. The old contents have been backed up and might be added to this new site over time.
