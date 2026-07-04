@@ -83,57 +83,16 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
         </div>
 
         <figure class="hero-fig">
-          <div class="timing-box" role="img" aria-label="Pipeline timing diagram: four instructions moving through IF, ID, EX, MEM and WB, with a RAW hazard stalling the branch by one cycle">
-            <div class="timing-grid">
-              <span class="cyc-h" style="grid-column:2">1</span>
-              <span class="cyc-h" style="grid-column:3">2</span>
-              <span class="cyc-h" style="grid-column:4">3</span>
-              <span class="cyc-h" style="grid-column:5">4</span>
-              <span class="cyc-h" style="grid-column:6">5</span>
-              <span class="cyc-h" style="grid-column:7">6</span>
-              <span class="cyc-h" style="grid-column:8">7</span>
-              <span class="cyc-h" style="grid-column:9">8</span>
-              <span class="cyc-h" style="grid-column:10">9</span>
-
-              <span class="instr">daddi r1, r0, 4</span>
-              <span class="cell c-if" style="--c:1; grid-column:2">IF</span>
-              <span class="cell c-id" style="--c:2; grid-column:3">ID</span>
-              <span class="cell c-ex" style="--c:3; grid-column:4">EX</span>
-              <span class="cell c-mem" style="--c:4; grid-column:5">MEM</span>
-              <span class="cell c-wb" style="--c:5; grid-column:6">WB</span>
-
-              <span class="instr">daddi r1, r1, -1</span>
-              <span class="cell c-if" style="--c:2; grid-column:3">IF</span>
-              <span class="cell c-id" style="--c:3; grid-column:4">ID</span>
-              <span class="cell c-ex" style="--c:4; grid-column:5">EX</span>
-              <span class="cell c-mem" style="--c:5; grid-column:6">MEM</span>
-              <span class="cell c-wb" style="--c:6; grid-column:7">WB</span>
-
-              <span class="instr">bne r1, r0, loop</span>
-              <span class="cell c-if" style="--c:3; grid-column:4">IF</span>
-              <span class="cell c-id" style="--c:4; grid-column:5">ID</span>
-              <span class="cell c-raw" style="--c:5; grid-column:6">RAW</span>
-              <span class="cell c-ex" style="--c:6; grid-column:7">EX</span>
-              <span class="cell c-mem" style="--c:7; grid-column:8">MEM</span>
-              <span class="cell c-wb" style="--c:8; grid-column:9">WB</span>
-
-              <span class="instr">syscall 0</span>
-              <span class="cell c-if" style="--c:4; grid-column:5">IF</span>
-              <span class="cell c-id" style="--c:6; grid-column:7">ID</span>
-              <span class="cell c-ex" style="--c:7; grid-column:8">EX</span>
-              <span class="cell c-mem" style="--c:8; grid-column:9">MEM</span>
-              <span class="cell c-wb" style="--c:9; grid-column:10">WB</span>
-            </div>
-            <div class="timing-legend">
-              <span><i class="c-if"></i>IF</span>
-              <span><i class="c-id"></i>ID</span>
-              <span><i class="c-ex"></i>EX</span>
-              <span><i class="c-mem"></i>MEM</span>
-              <span><i class="c-wb"></i>WB</span>
-              <span><i class="c-raw"></i>RAW stall</span>
-            </div>
-          </div>
-          <figcaption>Fig. 1 — Pipeline timing, loop.s. The RAW hazard on r1 stalls the branch by one cycle.</figcaption>
+          <a class="shot-box" href="https://web.edumips.org">
+            <img
+              src="/screenshot-web.png"
+              alt="The EduMIPS64 web version running a program: source code with the pipeline stages of each instruction highlighted, execution statistics, and the CPU pipeline diagram"
+              width="1710"
+              height="1231"
+              loading="eager"
+            />
+          </a>
+          <figcaption>Fig. 1 — The web version at web.edumips.org, mid-execution: pipeline stages highlighted in the source, live statistics and the CPU diagram.</figcaption>
         </figure>
       </section>
 
@@ -240,21 +199,16 @@ loop:   daddi    r1, r1, -1
 
       <section class="wrap" id="notes">
         <div class="secthead"><span class="num">5</span><h2>Application notes</h2></div>
-        <p class="section-intro">Announcements and articles from the project, including the
-        <a href="https://edumips64.blogspot.com/">development blog</a>.</p>
+        <p class="section-intro">Announcements and articles from the project's twenty years.</p>
         <div class="notes-list">
           {
             notesRendered.map(({ entry, Content }) => (
               <article class="note-item">
                 <time datetime={isoDate(entry.data.date)}>{isoDate(entry.data.date)}</time>
                 <div class="note-body">
-                  <h3>
-                    {entry.data.source
-                      ? <a href={entry.data.source}>{entry.data.title}</a>
-                      : entry.data.title}
-                  </h3>
+                  <h3><a href={`/news/${entry.id}/`}>{entry.data.title}</a></h3>
                   {entry.data.excerpt
-                    ? <p>{entry.data.excerpt} {entry.data.source && <a class="more" href={entry.data.source}>Read on the blog →</a>}</p>
+                    ? <p>{entry.data.excerpt} <a class="more" href={`/news/${entry.id}/`}>Read more →</a></p>
                     : <div class="note-content"><Content /></div>}
                 </div>
               </article>
@@ -350,38 +304,8 @@ loop:   daddi    r1, r1, -1
       .cta-note a { color: var(--steel); }
       .hero-fig figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 10px; }
 
-      .timing-box { border: 1px solid var(--ink); background: #fff; padding: 16px 16px 12px; overflow-x: auto; }
-      .timing-grid {
-        display: grid;
-        grid-template-columns: minmax(112px, auto) repeat(9, minmax(21px, 1fr));
-        gap: 4px 3px; min-width: 340px;
-      }
-      .cyc-h { font-family: var(--mono); font-size: 10px; color: var(--steel); text-align: center; }
-      .timing-grid .instr {
-        font-family: var(--mono); font-size: 11.5px; color: var(--ink);
-        grid-column: 1; align-self: center; padding-right: 10px; white-space: nowrap;
-      }
-      .cell {
-        font-family: var(--mono); font-size: 9.5px; font-weight: 700; color: #16181d;
-        height: 22px; display: flex; align-items: center; justify-content: center;
-        opacity: 0; transform: scale(.6);
-        animation: cell-in .28s cubic-bezier(.2, .9, .3, 1.4) forwards;
-        animation-delay: calc(var(--c) * .5s);
-      }
-      @keyframes cell-in { to { opacity: 1; transform: scale(1); } }
-      .c-if { background: #f2c94c; }
-      .c-id { background: #7db8f5; }
-      .c-ex { background: #f58a8a; }
-      .c-mem { background: #8ad4a5; }
-      .c-wb { background: #c9a3e8; }
-      .c-raw { background: #f5b06a; }
-      .timing-legend {
-        display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px;
-        padding-top: 10px; border-top: 1px solid var(--hairline);
-        font-family: var(--mono); font-size: 10.5px; color: var(--steel);
-      }
-      .timing-legend span { display: inline-flex; align-items: center; gap: 5px; }
-      .timing-legend i { width: 10px; height: 10px; display: inline-block; }
+      .shot-box { display: block; border: 1px solid var(--ink); background: #fff; }
+      .shot-box img { display: block; width: 100%; height: auto; }
 
       .secthead { display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid var(--ink); padding-top: 56px; padding-bottom: 10px; margin-bottom: 32px; }
       .secthead .num { font-family: var(--mono); font-size: 15px; color: var(--red); }
@@ -469,7 +393,6 @@ loop:   daddi    r1, r1, -1
       }
       @media (prefers-reduced-motion: reduce) {
         html { scroll-behavior: auto; }
-        .cell { animation: none; opacity: 1; transform: none; }
       }
     </style>
   </body>
