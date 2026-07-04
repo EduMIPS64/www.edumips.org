@@ -1,0 +1,395 @@
+---
+import { getCollection, render } from 'astro:content';
+
+const allNews = await getCollection('news');
+allNews.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const recentNews = allNews.slice(0, 5);
+const olderNews = allNews.slice(5);
+
+const recentRendered = await Promise.all(
+  recentNews.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+);
+const olderRendered = await Promise.all(
+  olderNews.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+);
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+    <title>EduMIPS64 &mdash; The MIPS64 CPU on your screen</title>
+    <meta
+      name="description"
+      content="EduMIPS64 is a free, visual MIPS64 CPU simulator built for Computer Architecture courses."
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <p class="wordmark">EduMIPS64</p>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#news">News</a>
+        <a href="https://edumips64.readthedocs.io">Manual</a>
+        <a href="https://github.com/EduMIPS64/edumips64">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>The MIPS64 CPU on your screen.</h1>
+        <p>
+          EduMIPS64 is a free, visual MIPS64 CPU simulator built for Computer
+          Architecture courses. Write assembly, step through it cycle by
+          cycle, and watch the pipeline, registers, memory and caches
+          respond.
+        </p>
+        <p class="cta-row">
+          <a class="cta" href="https://web.edumips.org">Try it online</a>
+          <a
+            class="cta"
+            href="https://github.com/EduMIPS64/edumips64/releases/latest">Download 1.4.0</a
+          >
+          <a
+            class="cta"
+            href="https://github.com/EduMIPS64/edumips64/releases/download/v1.4.0/EduMIPS64-manual-en.pdf"
+            >English manual (PDF)</a
+          >
+        </p>
+      </section>
+
+      <section id="features" class="features">
+        <h2>Features</h2>
+        <ul class="feature-list">
+          <li class="feature">
+            <h3>Watch the pipeline</h3>
+            <p>
+              Instructions flow through IF, ID, EX, MEM and WB &mdash; plus
+              the FP adder, multiplier and divider &mdash; in a live,
+              color-coded view.
+            </p>
+          </li>
+          <li class="feature">
+            <h3>Full machine state</h3>
+            <p>
+              Registers, memory and execution statistics update at every
+              cycle, so cause and effect are always visible.
+            </p>
+          </li>
+          <li class="feature">
+            <h3>Built-in cache simulator</h3>
+            <p>
+              Configure L1 instruction and data caches (size, block size,
+              associativity) and watch hit/miss counts as your code runs.
+              New in 1.4.0.
+            </p>
+          </li>
+          <li class="feature">
+            <h3>Learn hazards by seeing them</h3>
+            <p>
+              RAW, WAW and structural stalls show up right in the cycle
+              diagram. Toggle forwarding and watch CPI change.
+            </p>
+          </li>
+          <li class="feature">
+            <h3>Runs everywhere</h3>
+            <p>
+              Native desktop app for Windows, macOS and Linux, a single JAR,
+              a scriptable CLI &mdash; or nothing to install at all at <a
+                href="https://web.edumips.org">web.edumips.org</a
+              >.
+            </p>
+          </li>
+          <li class="feature">
+            <h3>Made for the classroom</h3>
+            <p>
+              Free software (GPL), UI and manuals in English, Italian and
+              Simplified Chinese, and an IEEE Transactions on Education paper
+              behind it. Twenty years in Computer Architecture courses.
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <section id="how-it-works" class="how-it-works">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li>
+            <h3>Write MIPS64 assembly</h3>
+            <p>...or open one of the bundled examples.</p>
+          </li>
+          <li>
+            <h3>Run it cycle by cycle</h3>
+            <p>Single step, multi-step, or run to completion.</p>
+          </li>
+          <li>
+            <h3>Inspect everything</h3>
+            <p>
+              Pipeline, registers, memory, stalls and cache stats; change the
+              config and run it again.
+            </p>
+          </li>
+        </ol>
+        <pre><code>.data
+vec:    .word64  1, 2, 3, 4
+.code
+main:   daddi    r1, r0, 4
+loop:   daddi    r1, r1, -1
+        bne      r1, r0, loop
+        syscall  0</code></pre>
+      </section>
+
+      <section id="news" class="news">
+        <h2>News</h2>
+        {
+          recentRendered.map(({ entry, Content }) => (
+            <article class="news-item">
+              <p class="news-title">
+                <time datetime={entry.data.date.toISOString().slice(0, 10)}>
+                  {dateFormatter.format(entry.data.date)}
+                </time>
+                : {entry.data.title}
+              </p>
+              <div class="news-body">
+                <Content />
+              </div>
+            </article>
+          ))
+        }
+        {
+          olderRendered.length > 0 && (
+            <details class="older-news">
+              <summary>Older news</summary>
+              {olderRendered.map(({ entry, Content }) => (
+                <article class="news-item">
+                  <p class="news-title">
+                    <time datetime={entry.data.date.toISOString().slice(0, 10)}>
+                      {dateFormatter.format(entry.data.date)}
+                    </time>
+                    : {entry.data.title}
+                  </p>
+                  <div class="news-body">
+                    <Content />
+                  </div>
+                </article>
+              ))}
+            </details>
+          )
+        }
+      </section>
+
+      <section id="history" class="history">
+        <h2>History</h2>
+        <p>
+          The development of the simulator started in 2006, when a group of
+          students from the University of Catania decided that they didn't
+          want to be tied to the Windows operating system to complete their
+          Computer Architecture assignments. Also, writing a CPU simulator
+          from scratch sounded fun!
+        </p>
+        <p>
+          Most of the features were implemented in 2006, and after that only
+          a handful of developers kept adding features in 2007 and 2008.
+          From 2008 on, the simulator has been maintained by <a
+            href="https://github.com/lupino3">lupino3</a
+          >, one of the founders of the project.
+        </p>
+        <p>
+          The <a href="https://github.com/EduMIPS64/edumips64/blob/master/ChangeLog"
+            >ChangeLog</a
+          > offers a bit of history, but unfortunately the bulk of the
+          development (prior to 0.0.7) was not recorded as it happened via
+          email using lupino3 as a human VCS.
+        </p>
+      </section>
+
+      <section id="contributing" class="contributing">
+        <h2>Contributing</h2>
+        <p>
+          Please feel free to contribute to EduMIPS64, in the spirit of free
+          software. The most basic form of contribution is filing bugs
+          against the simulator, reporting any defects you find or
+          suggesting improvements. We use GitHub issues to track bugs and
+          feature requests, see the <a
+            href="https://github.com/EduMIPS64/edumips64/issues">GitHub issues page</a
+          > for a list of existing issues and a way to open new ones.
+        </p>
+        <p id="security">
+          Please report any security vulnerabilities through the public
+          GitHub issue tracker.
+        </p>
+        <p>
+          If you want to contribute by writing code, please contact the
+          maintainers via GitHub, as they will be able to direct you to the
+          code areas where your skills will be most useful. Please have a
+          look first at the <a
+            href="https://github.com/EduMIPS64/edumips64/blob/master/docs/developer-guide.md"
+            >developer guide</a
+          >, which explains how to build EduMIPS64 from source and how the
+          code is structured.
+        </p>
+      </section>
+
+      <section id="support" class="support">
+        <h2>Support</h2>
+        <p>
+          The development of EduMIPS64 is aided by two companies that
+          provide tools for free for developers of free software. Those
+          companies are:
+        </p>
+        <ul>
+          <li>
+            YourKit, that supports open source projects with its
+            full-featured Java Profiler. YourKit, LLC is the creator of <a
+              href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a
+            > and <a href="https://www.yourkit.com/.net/profiler/"
+              >YourKit .NET Profiler</a
+            >, innovative and intelligent tools for profiling Java and .NET
+            applications.
+          </li>
+          <li>JetBrains, who kindly provide IntelliJ Ultimate.</li>
+        </ul>
+        <p class="sponsor-logos">
+          <a href="http://www.yourkit.com"
+            ><img src="/images/yklogo.png" width="180" alt="YourKit logo" /></a
+          >
+          <a href="http://www.jetbrains.com"
+            ><img
+              src="/images/jetbrains.png"
+              width="100"
+              alt="JetBrains logo"
+            /></a
+          >
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        EduMIPS64 &mdash; free software, GPL. Website source on <a
+          href="https://github.com/EduMIPS64/www.edumips.org">GitHub</a
+        >.
+      </p>
+    </footer>
+
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+      }
+
+      body {
+        margin: 0 auto;
+        max-width: 60rem;
+        padding: 0 1.5rem 3rem;
+      }
+
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.5rem 0;
+      }
+
+      .wordmark {
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin: 0;
+      }
+
+      .site-header nav {
+        display: flex;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+      }
+
+      .hero {
+        padding: 2rem 0;
+      }
+
+      .cta-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .cta {
+        border: 1px solid currentColor;
+        border-radius: 0.25rem;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+      }
+
+      .feature-list,
+      .steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+      }
+
+      .steps {
+        list-style: decimal inside;
+      }
+
+      .feature h3,
+      .steps h3 {
+        margin-bottom: 0.25rem;
+      }
+
+      pre {
+        background: rgba(128, 128, 128, 0.15);
+        padding: 1rem;
+        border-radius: 0.25rem;
+        overflow-x: auto;
+      }
+
+      section {
+        padding: 2rem 0;
+        border-top: 1px solid rgba(128, 128, 128, 0.3);
+      }
+
+      .news-item {
+        margin-bottom: 1.5rem;
+      }
+
+      .news-title {
+        font-weight: 700;
+      }
+
+      .older-news summary {
+        cursor: pointer;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+
+      .sponsor-logos {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+      }
+
+      .site-footer {
+        border-top: 1px solid rgba(128, 128, 128, 0.3);
+        padding-top: 1.5rem;
+        font-size: 0.9rem;
+      }
+    </style>
+  </body>
+</html>
