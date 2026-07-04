@@ -4,17 +4,24 @@ import { getCollection, render } from 'astro:content';
 const allNews = await getCollection('news');
 allNews.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-const rendered = await Promise.all(
-  allNews.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+const releases = allNews.filter((e) => e.data.kind === 'release');
+const notes = allNews.filter((e) => e.data.kind !== 'release');
+
+const releasesRendered = await Promise.all(
+  releases.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+);
+const notesRendered = await Promise.all(
+  notes.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
 );
 
 // Datasheet "revision history" columns, parsed from titles like
 // "Release 1.4.0 (codename: WalkOfLife)".
 function revMeta(title: string) {
   const m = title.match(/Release\s+([\d.]+)(?:\s*\(codename:\s*(.+?)\))?/i);
-  if (m) return { rev: m[1], codename: m[2] ?? '—', isRelease: true };
-  return { rev: '—', codename: '—', isRelease: false };
+  return { rev: m?.[1] ?? '—', codename: m?.[2] ?? '—' };
 }
+
+const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
 <!doctype html>
@@ -24,7 +31,7 @@ function revMeta(title: string) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#d70000" />
     <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
-    <title>EduMIPS64 — the visual MIPS64 CPU simulator</title>
+    <title>EduMIPS64 — a MIPS64 CPU on your screen</title>
     <meta
       name="description"
       content="EduMIPS64 is a free, visual MIPS64 CPU simulator built for Computer Architecture courses. Write assembly, run it cycle by cycle, inspect the pipeline, registers, memory and caches."
@@ -48,7 +55,8 @@ function revMeta(title: string) {
         <nav>
           <a href="#features">2. Features</a>
           <a href="#how-it-works">3. Operation</a>
-          <a href="#news">5. Revisions</a>
+          <a href="#notes">5. Notes</a>
+          <a href="#news">6. Revisions</a>
           <a href="https://github.com/EduMIPS64/edumips64">GitHub</a>
         </nav>
       </div>
@@ -58,7 +66,7 @@ function revMeta(title: string) {
       <section class="wrap hero">
         <div>
           <p class="kicker">1. General description · free software · <b>GPL · est. 2006</b></p>
-          <h1>The MIPS64 CPU, <em>on your screen.</em></h1>
+          <h1>A MIPS64 CPU, <em>on your screen.</em></h1>
           <p class="lede">
             EduMIPS64 is a visual MIPS64 processor simulator for Computer Architecture
             courses. Write assembly, execute it cycle by cycle, and inspect the pipeline,
@@ -75,45 +83,57 @@ function revMeta(title: string) {
         </div>
 
         <figure class="hero-fig">
-          <svg viewBox="0 0 460 340" role="img" aria-label="EduMIPS64 drawn as a chip package, with its features as labeled pins">
-            <g font-family="Fragment Mono, monospace">
-              <rect x="150" y="24" width="160" height="292" rx="6" fill="#16181d"></rect>
-              <circle cx="230" cy="24" r="14" fill="#fbfbf9"></circle>
-              <circle cx="170" cy="52" r="5" fill="#d70000"></circle>
-              <text x="230" y="158" text-anchor="middle" fill="#fbfbf9" font-family="Archivo, sans-serif" font-weight="800" font-size="26" letter-spacing="-0.5">EduMIPS</text>
-              <text x="230" y="188" text-anchor="middle" fill="#d70000" font-family="Archivo, sans-serif" font-weight="800" font-size="26">64</text>
-              <text x="230" y="216" text-anchor="middle" fill="#8a919d" font-size="10">REV 1.4.0 · EST 2006</text>
-              <g>
-                <rect x="118" y="62" width="32" height="14" fill="#16181d"></rect>
-                <rect x="118" y="122" width="32" height="14" fill="#16181d"></rect>
-                <rect x="118" y="182" width="32" height="14" fill="#16181d"></rect>
-                <rect x="118" y="242" width="32" height="14" fill="#16181d"></rect>
-                <text class="pin-num" x="128" y="56">1</text>
-                <text class="pin-num" x="128" y="116">2</text>
-                <text class="pin-num" x="128" y="176">3</text>
-                <text class="pin-num" x="128" y="236">4</text>
-                <text class="pin-label" x="108" y="73" text-anchor="end">PIPELINE</text>
-                <text class="pin-label" x="108" y="133" text-anchor="end">HAZARDS</text>
-                <text class="pin-label" x="108" y="193" text-anchor="end">L1 CACHE</text>
-                <text class="pin-label" x="108" y="253" text-anchor="end">FPU</text>
-              </g>
-              <g>
-                <rect x="310" y="62" width="32" height="14" fill="#16181d"></rect>
-                <rect x="310" y="122" width="32" height="14" fill="#16181d"></rect>
-                <rect x="310" y="182" width="32" height="14" fill="#16181d"></rect>
-                <rect x="310" y="242" width="32" height="14" fill="#16181d"></rect>
-                <text class="pin-num" x="326" y="56">8</text>
-                <text class="pin-num" x="326" y="116">7</text>
-                <text class="pin-num" x="326" y="176">6</text>
-                <text class="pin-num" x="326" y="236">5</text>
-                <text class="pin-label" x="352" y="73">WEB</text>
-                <text class="pin-label" x="352" y="133">DESKTOP</text>
-                <text class="pin-label" x="352" y="193">CLI</text>
-                <text class="pin-label" x="352" y="253">GPL</text>
-              </g>
-            </g>
-          </svg>
-          <figcaption>Fig. 1 — EduMIPS64 feature pinout (DIP-8, top view)</figcaption>
+          <div class="timing-box" role="img" aria-label="Pipeline timing diagram: four instructions moving through IF, ID, EX, MEM and WB, with a RAW hazard stalling the branch by one cycle">
+            <div class="timing-grid">
+              <span class="cyc-h" style="grid-column:2">1</span>
+              <span class="cyc-h" style="grid-column:3">2</span>
+              <span class="cyc-h" style="grid-column:4">3</span>
+              <span class="cyc-h" style="grid-column:5">4</span>
+              <span class="cyc-h" style="grid-column:6">5</span>
+              <span class="cyc-h" style="grid-column:7">6</span>
+              <span class="cyc-h" style="grid-column:8">7</span>
+              <span class="cyc-h" style="grid-column:9">8</span>
+              <span class="cyc-h" style="grid-column:10">9</span>
+
+              <span class="instr">daddi r1, r0, 4</span>
+              <span class="cell c-if" style="--c:1; grid-column:2">IF</span>
+              <span class="cell c-id" style="--c:2; grid-column:3">ID</span>
+              <span class="cell c-ex" style="--c:3; grid-column:4">EX</span>
+              <span class="cell c-mem" style="--c:4; grid-column:5">MEM</span>
+              <span class="cell c-wb" style="--c:5; grid-column:6">WB</span>
+
+              <span class="instr">daddi r1, r1, -1</span>
+              <span class="cell c-if" style="--c:2; grid-column:3">IF</span>
+              <span class="cell c-id" style="--c:3; grid-column:4">ID</span>
+              <span class="cell c-ex" style="--c:4; grid-column:5">EX</span>
+              <span class="cell c-mem" style="--c:5; grid-column:6">MEM</span>
+              <span class="cell c-wb" style="--c:6; grid-column:7">WB</span>
+
+              <span class="instr">bne r1, r0, loop</span>
+              <span class="cell c-if" style="--c:3; grid-column:4">IF</span>
+              <span class="cell c-id" style="--c:4; grid-column:5">ID</span>
+              <span class="cell c-raw" style="--c:5; grid-column:6">RAW</span>
+              <span class="cell c-ex" style="--c:6; grid-column:7">EX</span>
+              <span class="cell c-mem" style="--c:7; grid-column:8">MEM</span>
+              <span class="cell c-wb" style="--c:8; grid-column:9">WB</span>
+
+              <span class="instr">syscall 0</span>
+              <span class="cell c-if" style="--c:4; grid-column:5">IF</span>
+              <span class="cell c-id" style="--c:6; grid-column:7">ID</span>
+              <span class="cell c-ex" style="--c:7; grid-column:8">EX</span>
+              <span class="cell c-mem" style="--c:8; grid-column:9">MEM</span>
+              <span class="cell c-wb" style="--c:9; grid-column:10">WB</span>
+            </div>
+            <div class="timing-legend">
+              <span><i class="c-if"></i>IF</span>
+              <span><i class="c-id"></i>ID</span>
+              <span><i class="c-ex"></i>EX</span>
+              <span><i class="c-mem"></i>MEM</span>
+              <span><i class="c-wb"></i>WB</span>
+              <span><i class="c-raw"></i>RAW stall</span>
+            </div>
+          </div>
+          <figcaption>Fig. 1 — Pipeline timing, loop.s. The RAW hazard on r1 stalls the branch by one cycle.</figcaption>
         </figure>
       </section>
 
@@ -215,23 +235,36 @@ loop:   daddi    r1, r1, -1
             guide</a>, then reach out to the maintainers on GitHub — they'll point you to
             where your skills help most.</p>
           </div>
-          <div>
-            <h3>Support</h3>
-            <p>Two companies support EduMIPS64 with free licenses for their developer
-            tools: <a href="https://www.yourkit.com/java/profiler/">YourKit</a>, creator of
-            the YourKit Java and .NET profilers, and
-            <a href="https://www.jetbrains.com">JetBrains</a>, who provide IntelliJ IDEA
-            Ultimate.</p>
-            <p class="sponsor-logos">
-              <a href="https://www.yourkit.com"><img src="/images/yklogo.png" width="140" alt="YourKit logo" /></a>
-              <a href="https://www.jetbrains.com"><img src="/images/jetbrains.png" width="60" alt="JetBrains logo" /></a>
-            </p>
-          </div>
+        </div>
+      </section>
+
+      <section class="wrap" id="notes">
+        <div class="secthead"><span class="num">5</span><h2>Application notes</h2></div>
+        <p class="section-intro">Announcements and articles from the project, including the
+        <a href="https://edumips64.blogspot.com/">development blog</a>.</p>
+        <div class="notes-list">
+          {
+            notesRendered.map(({ entry, Content }) => (
+              <article class="note-item">
+                <time datetime={isoDate(entry.data.date)}>{isoDate(entry.data.date)}</time>
+                <div class="note-body">
+                  <h3>
+                    {entry.data.source
+                      ? <a href={entry.data.source}>{entry.data.title}</a>
+                      : entry.data.title}
+                  </h3>
+                  {entry.data.excerpt
+                    ? <p>{entry.data.excerpt} {entry.data.source && <a class="more" href={entry.data.source}>Read on the blog →</a>}</p>
+                    : <div class="note-content"><Content /></div>}
+                </div>
+              </article>
+            ))
+          }
         </div>
       </section>
 
       <section class="wrap" id="news">
-        <div class="secthead"><span class="num">5</span><h2>Revision history</h2></div>
+        <div class="secthead"><span class="num">6</span><h2>Revision history</h2></div>
         <div class="table-scroll">
           <table class="rev-table">
             <thead>
@@ -239,21 +272,16 @@ loop:   daddi    r1, r1, -1
             </thead>
             <tbody>
               {
-                rendered.map(({ entry, Content }) => {
+                releasesRendered.map(({ entry, Content }) => {
                   const meta = revMeta(entry.data.title);
                   return (
                     <tr>
                       <td class="date">
-                        <time datetime={entry.data.date.toISOString().slice(0, 10)}>
-                          {entry.data.date.toISOString().slice(0, 10)}
-                        </time>
+                        <time datetime={isoDate(entry.data.date)}>{isoDate(entry.data.date)}</time>
                       </td>
-                      <td class="ver">{meta.isRelease ? <b>{meta.rev}</b> : '—'}</td>
+                      <td class="ver"><b>{meta.rev}</b></td>
                       <td class="codename">{meta.codename}</td>
-                      <td class="notes">
-                        {!meta.isRelease && <strong class="notes-title">{entry.data.title}. </strong>}
-                        <Content />
-                      </td>
+                      <td class="notes"><Content /></td>
                     </tr>
                   );
                 })
@@ -320,10 +348,40 @@ loop:   daddi    r1, r1, -1
       .btn-primary:hover { background: #b00000; border-color: #b00000; color: #fff; }
       .cta-note { font-family: var(--mono); font-size: 12px; color: var(--steel); margin-top: 14px; }
       .cta-note a { color: var(--steel); }
-      .hero-fig svg { width: 100%; height: auto; }
-      .hero-fig figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 10px; text-align: center; }
-      .pin-label { font-size: 12px; fill: var(--ink); }
-      .pin-num { font-size: 9px; fill: var(--steel); }
+      .hero-fig figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 10px; }
+
+      .timing-box { border: 1px solid var(--ink); background: #fff; padding: 16px 16px 12px; overflow-x: auto; }
+      .timing-grid {
+        display: grid;
+        grid-template-columns: minmax(112px, auto) repeat(9, minmax(21px, 1fr));
+        gap: 4px 3px; min-width: 340px;
+      }
+      .cyc-h { font-family: var(--mono); font-size: 10px; color: var(--steel); text-align: center; }
+      .timing-grid .instr {
+        font-family: var(--mono); font-size: 11.5px; color: var(--ink);
+        grid-column: 1; align-self: center; padding-right: 10px; white-space: nowrap;
+      }
+      .cell {
+        font-family: var(--mono); font-size: 9.5px; font-weight: 700; color: #16181d;
+        height: 22px; display: flex; align-items: center; justify-content: center;
+        opacity: 0; transform: scale(.6);
+        animation: cell-in .28s cubic-bezier(.2, .9, .3, 1.4) forwards;
+        animation-delay: calc(var(--c) * .5s);
+      }
+      @keyframes cell-in { to { opacity: 1; transform: scale(1); } }
+      .c-if { background: #f2c94c; }
+      .c-id { background: #7db8f5; }
+      .c-ex { background: #f58a8a; }
+      .c-mem { background: #8ad4a5; }
+      .c-wb { background: #c9a3e8; }
+      .c-raw { background: #f5b06a; }
+      .timing-legend {
+        display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px;
+        padding-top: 10px; border-top: 1px solid var(--hairline);
+        font-family: var(--mono); font-size: 10.5px; color: var(--steel);
+      }
+      .timing-legend span { display: inline-flex; align-items: center; gap: 5px; }
+      .timing-legend i { width: 10px; height: 10px; display: inline-block; }
 
       .secthead { display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid var(--ink); padding-top: 56px; padding-bottom: 10px; margin-bottom: 32px; }
       .secthead .num { font-family: var(--mono); font-size: 15px; color: var(--red); }
@@ -350,11 +408,25 @@ loop:   daddi    r1, r1, -1
       }
       .listing figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 8px; }
 
-      .project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+      .project-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; }
       .project-grid h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin-bottom: 8px; }
       .project-grid p { font-size: 15px; color: var(--body-ink); margin-bottom: 10px; }
-      .sponsor-logos { display: flex; gap: 16px; align-items: center; }
-      .sponsor-logos img { display: block; height: auto; }
+
+      .section-intro { font-size: 15px; color: var(--steel); margin: -16px 0 24px; }
+      .notes-list { display: grid; gap: 0; }
+      .note-item {
+        display: grid; grid-template-columns: 110px 1fr; gap: 20px;
+        padding: 16px 0; border-bottom: 1px solid var(--hairline);
+      }
+      .note-item:first-child { padding-top: 0; }
+      .note-item time { font-family: var(--mono); font-size: 12.5px; color: var(--steel); padding-top: 3px; }
+      .note-body h3 { font-family: var(--display); font-weight: 700; font-size: 16.5px; margin-bottom: 4px; }
+      .note-body h3 a { text-decoration: none; }
+      .note-body h3 a:hover { color: var(--red); text-decoration: underline; text-decoration-color: var(--red); }
+      .note-body p, .note-content { font-size: 15px; color: var(--body-ink); max-width: 68ch; }
+      .note-content :global(p) { margin: 0 0 6px; }
+      .note-content :global(p:last-child) { margin-bottom: 0; }
+      .more { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
 
       .table-scroll { overflow-x: auto; }
       .rev-table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 640px; }
@@ -372,7 +444,6 @@ loop:   daddi    r1, r1, -1
       .rev-table td.notes :global(p) { margin: 0 0 6px; }
       .rev-table td.notes :global(p:last-child) { margin-bottom: 0; }
       .rev-table td.notes :global(code) { font-family: var(--mono); font-size: 13px; }
-      .notes-title { color: var(--ink); }
 
       .site-footer { border-top: 2px solid var(--ink); margin-top: 64px; }
       .footer-inner {
@@ -394,9 +465,11 @@ loop:   daddi    r1, r1, -1
       @media (max-width: 560px) {
         .feature-list { grid-template-columns: 1fr; }
         .topbar nav { gap: 12px; }
+        .note-item { grid-template-columns: 1fr; gap: 2px; }
       }
       @media (prefers-reduced-motion: reduce) {
         html { scroll-behavior: auto; }
+        .cell { animation: none; opacity: 1; transform: none; }
       }
     </style>
   </body>
