@@ -92,7 +92,7 @@ const noteCount = all.length - releaseCount;
 
         <script is:inline>
           // Run client-side to handle tab switching
-          (() => {
+          document.addEventListener('DOMContentLoaded', () => {
             const buttons = document.querySelectorAll('.tab-btn');
             const contents = document.querySelectorAll('.tab-content');
             buttons.forEach(btn => {
@@ -129,7 +129,7 @@ const noteCount = all.length - releaseCount;
             lightbox.addEventListener('click', () => {
               lightbox.close();
             });
-          })();
+          });
         </script>
       </figure>
     </section>
