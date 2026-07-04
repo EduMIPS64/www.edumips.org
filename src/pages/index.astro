@@ -43,7 +43,7 @@ const noteCount = all.length - releaseCount;
       <figure class="hero-fig">
         <div class="tabs-buttons-row" role="tablist">
           <button type="button" class="tab-btn active" data-tab="web" role="tab" aria-selected="true">Web UI</button>
-          <button type="button" class="tab-btn" data-tab="swing" role="tab" aria-selected="false">Swing UI</button>
+          <button type="button" class="tab-btn" data-tab="swing" role="tab" aria-selected="false">Java Desktop UI</button>
         </div>
 
         <div class="tab-content active" data-tab-content="web" role="tabpanel">
@@ -110,7 +110,7 @@ const noteCount = all.length - releaseCount;
                   if (tabName === 'web') {
                     figcaption.textContent = 'Fig. 1 — The web version at web.edumips.org, mid-execution: pipeline stages highlighted in the source, live statistics and the CPU diagram.';
                   } else {
-                    figcaption.textContent = 'Fig. 1 — The native Swing desktop application showing multiple simulator panels: cycles, registers, statistics, pipeline, data and code.';
+                    figcaption.textContent = 'Fig. 1 — The native Java Desktop application showing multiple simulator panels: cycles, registers, statistics, pipeline, data and code.';
                   }
                 }
               });
@@ -274,7 +274,7 @@ loop:   daddi    r1, r1, -1
     margin-bottom: 12px;
     border: 1px solid var(--hairline);
   }
-  :root[data-theme='dark'] .tabs-buttons-row {
+  :global(:root[data-theme='dark']) .tabs-buttons-row {
     background: var(--panel);
   }
   .tab-btn {
@@ -299,7 +299,7 @@ loop:   daddi    r1, r1, -1
     color: var(--red);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
-  :root[data-theme='dark'] .tab-btn.active {
+  :global(:root[data-theme='dark']) .tab-btn.active {
     background: var(--hairline);
     color: var(--red);
   }
@@ -317,10 +317,10 @@ loop:   daddi    r1, r1, -1
   .dark-only {
     display: none;
   }
-  :root[data-theme='dark'] .light-only {
+  :global(:root[data-theme='dark']) .light-only {
     display: none;
   }
-  :root[data-theme='dark'] .dark-only {
+  :global(:root[data-theme='dark']) .dark-only {
     display: block;
   }
 
