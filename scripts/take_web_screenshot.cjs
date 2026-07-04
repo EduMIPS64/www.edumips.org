@@ -26,12 +26,25 @@ const puppeteer = require('puppeteer');
 
   await page.bringToFront();
   
-  // Click the 'Load' button to parse the default code
+  // Inject the loop.s code explicitly
+  await page.evaluate(() => {
+    const code = `.data
+vec:    .word64  1, 2, 3, 4
+
+        .code
+main:   daddi    r1, r0, 4
+loop:   daddi    r1, r1, -1
+        bne      r1, r0, loop
+        syscall  0`;
+    window.monaco.editor.getModels()[0].setValue(code);
+  });
+  
+  // Click the 'Load' button to parse the code
   await page.click('#load-button');
   await new Promise(r => setTimeout(r, 1000));
   
-  // Click the 'Step' button 4 times to be mid-execution
-  for (let i = 0; i < 4; i++) {
+  // Click the 'Step' button 10 times to be deeply mid-execution
+  for (let i = 0; i < 10; i++) {
     try {
       await page.click('#step-button');
       await new Promise(r => setTimeout(r, 500));
