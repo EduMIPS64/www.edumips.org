@@ -11,18 +11,14 @@ const puppeteer = require('puppeteer');
   
   const theme = process.argv[3] || 'dark';
   
-  // Set theme multiple ways to ensure it catches correctly before rendering
+  // Click the correct theme button in the UI natively
   await page.evaluate((themeMode) => {
-    localStorage.setItem('themeMode', themeMode);
-    document.documentElement.setAttribute('data-theme', themeMode);
+    const buttons = Array.from(document.querySelectorAll('.MuiToggleButtonGroup-grouped'));
+    const targetBtn = buttons.find(b => b.textContent.trim().toLowerCase() === themeMode.toLowerCase());
+    if (targetBtn) targetBtn.click();
   }, theme);
   
-  await page.reload({ waitUntil: 'networkidle0' });
-  
-  await page.evaluate((themeMode) => {
-    localStorage.setItem('themeMode', themeMode);
-    document.documentElement.setAttribute('data-theme', themeMode);
-  }, theme);
+  await new Promise(r => setTimeout(r, 1000));
 
   await page.bringToFront();
   
