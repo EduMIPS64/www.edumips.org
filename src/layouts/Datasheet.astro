@@ -1,0 +1,175 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  docRef?: string;
+}
+const { title, description, docRef = '1.4.0 · MIPS64 CPU SIMULATOR' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#d70000" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14161a" />
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <slot name="head" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Fragment+Mono&family=Source+Sans+3:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline>
+      // Runs before first paint: honor a stored choice, else follow the OS.
+      (() => {
+        const stored = localStorage.getItem('edumips-theme');
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        document.documentElement.dataset.theme = stored ?? (mq.matches ? 'dark' : 'light');
+        mq.addEventListener('change', (e) => {
+          if (!localStorage.getItem('edumips-theme')) {
+            document.documentElement.dataset.theme = e.matches ? 'dark' : 'light';
+          }
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <a class="wordmark" href="/">EduMIPS<b>64</b></a>
+        <span class="doc-ref">{docRef}</span>
+        <nav>
+          <a href="/revisions/">Revisions</a>
+          <a href="/news/">Notes</a>
+          <a href="https://github.com/EduMIPS64/edumips64">GitHub</a>
+          <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle color theme"></button>
+        </nav>
+      </div>
+    </header>
+
+    <slot />
+
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <span>EduMIPS64 — free software, released under the GPL ·
+          <a href="https://github.com/EduMIPS64/www.edumips.org">website source on GitHub</a></span>
+        <span class="page-no">www.edumips.org - Ciao 'mbare</span>
+      </div>
+    </footer>
+
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        const buttons = document.querySelectorAll('[data-theme-toggle]');
+        const label = () => buttons.forEach((b) => (b.textContent = `theme: ${root.dataset.theme}`));
+        label();
+        new MutationObserver(label).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+        buttons.forEach((b) =>
+          b.addEventListener('click', () => {
+            const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = next;
+            localStorage.setItem('edumips-theme', next);
+          })
+        );
+      })();
+    </script>
+
+    <style is:global>
+      :root {
+        --paper: #fbfbf9;
+        --panel: #ffffff;
+        --ink: #16181d;
+        --body-ink: #3a4048;
+        --steel: #5a6270;
+        --hairline: #dcdee3;
+        --faint: #b6bac2;
+        --red: #d70000;
+        --display: 'Archivo', system-ui, sans-serif;
+        --body: 'Source Sans 3', system-ui, sans-serif;
+        --mono: 'Fragment Mono', ui-monospace, monospace;
+        --bg-gradient: radial-gradient(circle 800px at 35% -100px, rgba(215, 0, 0, 0.1) 0%, transparent 100%), radial-gradient(circle 800px at 65% -100px, rgba(99, 102, 241, 0.14) 0%, transparent 100%);
+      }
+      :root[data-theme='dark'] {
+        --paper: #14161a;
+        --panel: #1b1e24;
+        --ink: #e8eaee;
+        --body-ink: #c4c8d0;
+        --steel: #99a0ac;
+        --hairline: #2a2e36;
+        --faint: #4a4f58;
+        --red: #ff5a5a;
+        --bg-gradient: radial-gradient(circle 800px at 35% -100px, rgba(255, 90, 90, 0.13) 0%, transparent 100%), radial-gradient(circle 800px at 65% -100px, rgba(99, 102, 241, 0.18) 0%, transparent 100%);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body {
+        background-color: var(--paper);
+        background-image: var(--bg-gradient);
+        background-repeat: no-repeat;
+        color: var(--ink);
+        font-family: var(--body);
+        font-size: 16.5px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: var(--ink); text-decoration-color: var(--red); text-underline-offset: 2px; }
+      a:hover { color: var(--red); }
+      .wrap { max-width: 1040px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+      .kicker {
+        font-family: var(--mono); font-size: 12px; letter-spacing: .12em;
+        text-transform: uppercase; color: var(--steel); margin-bottom: 16px;
+      }
+      .kicker b { color: var(--red); font-weight: 400; }
+      .secthead {
+        display: flex; align-items: baseline; gap: 16px;
+        border-bottom: 2px solid var(--ink); padding-top: 56px; padding-bottom: 10px; margin-bottom: 32px;
+      }
+      .secthead .num { font-family: var(--mono); font-size: 15px; color: var(--red); }
+      .secthead h2 { font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: -.02em; }
+      .secthead .all { margin-left: auto; font-family: var(--mono); font-size: 13px; color: var(--steel); white-space: nowrap; }
+      .secthead .all:hover { color: var(--red); }
+      .section-intro { font-size: 15px; color: var(--steel); margin: -16px 0 24px; }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+    </style>
+
+    <style>
+      .topbar { border-bottom: 2px solid var(--ink); }
+      .topbar-inner { display: flex; align-items: baseline; gap: 24px; padding: 16px 24px; }
+      .wordmark {
+        font-family: var(--display); font-weight: 800; font-size: 20px;
+        letter-spacing: -.02em; text-decoration: none; color: var(--ink);
+      }
+      .wordmark b { color: var(--red); }
+      .doc-ref { font-family: var(--mono); font-size: 12px; color: var(--steel); }
+      .topbar nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; align-items: baseline; }
+      .topbar nav a { font-family: var(--mono); font-size: 13px; color: var(--steel); text-decoration: none; }
+      .topbar nav a:hover { color: var(--red); }
+      .theme-toggle {
+        font-family: var(--mono); font-size: 12px; color: var(--steel);
+        background: none; border: 1px solid var(--hairline); border-radius: 999px;
+        padding: 3px 12px; cursor: pointer;
+      }
+      .theme-toggle:hover { color: var(--red); border-color: var(--steel); }
+      .theme-toggle:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+      .site-footer { border-top: 2px solid var(--ink); margin-top: 64px; }
+      .footer-inner {
+        display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+        padding-top: 20px; padding-bottom: 36px;
+        font-family: var(--mono); font-size: 12px; color: var(--steel);
+      }
+      .site-footer a { color: var(--steel); }
+      .page-no { color: var(--faint); }
+
+      @media (max-width: 1080px) { .doc-ref { display: none; } }
+      @media (max-width: 560px) { .topbar nav { gap: 12px; } }
+    </style>
+  </body>
+</html>

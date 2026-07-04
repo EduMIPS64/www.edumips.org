@@ -1,0 +1,58 @@
+---
+import { getCollection, render } from 'astro:content';
+import Datasheet from '../../layouts/Datasheet.astro';
+
+export async function getStaticPaths() {
+  const notes = (await getCollection('news')).filter((e) => e.data.kind !== 'release');
+  return notes.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const iso = entry.data.date.toISOString().slice(0, 10);
+---
+
+<Datasheet
+  title={`${entry.data.title} — EduMIPS64`}
+  description={entry.data.excerpt ?? `EduMIPS64 application note, ${iso}.`}
+  docRef="APPLICATION NOTE"
+>
+  <main class="wrap">
+    <article>
+      <p class="kicker">Application note · <time datetime={iso}>{iso}</time></p>
+      <h1>{entry.data.title}</h1>
+      {entry.data.source && (
+        <p class="provenance">First published on the EduMIPS64 development blog.</p>
+      )}
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+    <p class="backlink"><a href="/news/">← All application notes</a></p>
+  </main>
+</Datasheet>
+
+<style>
+  main { padding-top: 56px; max-width: 760px; }
+  h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(28px, 4vw, 40px); line-height: 1.1; letter-spacing: -.02em;
+    margin-bottom: 10px;
+  }
+  .provenance { font-family: var(--mono); font-size: 12px; color: var(--steel); margin-bottom: 8px; }
+  .prose { margin-top: 24px; color: var(--body-ink); }
+  .prose :global(p) { margin: 0 0 14px; max-width: 68ch; }
+  .prose :global(h2), .prose :global(h3) { font-family: var(--display); color: var(--ink); margin: 26px 0 8px; }
+  .prose :global(ul), .prose :global(ol) { margin: 0 0 14px 22px; }
+  .prose :global(li) { margin-bottom: 4px; }
+  .prose :global(code) { font-family: var(--mono); font-size: 13.5px; }
+  .prose :global(pre) {
+    border: 1px solid var(--ink); background: var(--panel); padding: 16px; overflow-x: auto;
+    font-family: var(--mono); font-size: 13px; line-height: 1.7; margin: 0 0 14px;
+  }
+  .prose :global(pre code) { font-size: 13px; }
+  .prose :global(img) { max-width: 100%; height: auto; }
+  .prose :global(a) { color: var(--ink); }
+  .prose :global(a:hover) { color: var(--red); }
+  .backlink { font-family: var(--mono); font-size: 13px; margin: 40px 0 0; }
+</style>

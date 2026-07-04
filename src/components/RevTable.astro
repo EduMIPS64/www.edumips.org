@@ -1,0 +1,70 @@
+---
+import { getCollection, render } from 'astro:content';
+
+interface Props {
+  limit?: number;
+}
+const { limit } = Astro.props;
+
+const releases = (await getCollection('news'))
+  .filter((e) => e.data.kind === 'release')
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const shown = limit ? releases.slice(0, limit) : releases;
+const rows = await Promise.all(
+  shown.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+);
+
+// Datasheet "revision history" columns, parsed from titles like
+// "Release 1.4.0 (codename: WalkOfLife)".
+function revMeta(title: string) {
+  const m = title.match(/Release\s+([\d.]+)(?:\s*\(codename:\s*(.+?)\))?/i);
+  return { rev: m?.[1] ?? '—', codename: m?.[2] ?? '—' };
+}
+
+const isoDate = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+<div class="table-scroll">
+  <table class="rev-table">
+    <thead>
+      <tr><th>Date</th><th>Rev</th><th>Codename</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      {
+        rows.map(({ entry, Content }) => {
+          const meta = revMeta(entry.data.title);
+          return (
+            <tr>
+              <td class="date">
+                <time datetime={isoDate(entry.data.date)}>{isoDate(entry.data.date)}</time>
+              </td>
+              <td class="ver"><b>{meta.rev}</b></td>
+              <td class="codename">{meta.codename}</td>
+              <td class="notes"><Content /></td>
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .table-scroll { overflow-x: auto; }
+  .rev-table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 640px; }
+  .rev-table th {
+    font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+    text-align: left; color: var(--steel); border-bottom: 1px solid var(--ink);
+    padding: 8px 16px 8px 0; font-weight: 400;
+  }
+  .rev-table td { border-bottom: 1px solid var(--hairline); padding: 14px 16px 14px 0; vertical-align: top; }
+  .rev-table td.date { font-family: var(--mono); font-size: 13px; white-space: nowrap; color: var(--steel); }
+  .rev-table td.ver { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+  .rev-table td.ver b { color: var(--red); font-weight: 400; }
+  .rev-table td.codename { font-size: 14px; white-space: nowrap; color: var(--body-ink); }
+  .rev-table td.notes { color: var(--body-ink); font-size: 15px; max-width: 60ch; }
+  .rev-table td.notes :global(p) { margin: 0 0 6px; }
+  .rev-table td.notes :global(p:last-child) { margin-bottom: 0; }
+  .rev-table td.notes :global(code) { font-family: var(--mono); font-size: 13px; }
+</style>
