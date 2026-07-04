@@ -41,16 +41,82 @@ const noteCount = all.length - releaseCount;
       </div>
 
       <figure class="hero-fig">
-        <a class="shot-box" href="https://web.edumips.org">
-          <img
-            src="/screenshot-web.png"
-            alt="The EduMIPS64 web version running a program: source code with the pipeline stages of each instruction highlighted, execution statistics, and the CPU pipeline diagram"
-            width="1710"
-            height="1231"
-            loading="eager"
-          />
-        </a>
+        <div class="tabs-buttons-row" role="tablist">
+          <button type="button" class="tab-btn active" data-tab="web" role="tab" aria-selected="true">Web UI</button>
+          <button type="button" class="tab-btn" data-tab="swing" role="tab" aria-selected="false">Swing UI</button>
+        </div>
+
+        <div class="tab-content active" data-tab-content="web" role="tabpanel">
+          <a class="shot-box" href="https://web.edumips.org">
+            <img
+              class="light-only"
+              src="/screenshot-web.png"
+              alt="The EduMIPS64 web version running a program: source code with the pipeline stages of each instruction highlighted, execution statistics, and the CPU pipeline diagram"
+              width="1710"
+              height="1231"
+              loading="eager"
+            />
+            <img
+              class="dark-only"
+              src="/screenshot-web-dark.jpg"
+              alt="The EduMIPS64 web version running a program in dark mode: source code, execution statistics, and the CPU pipeline diagram"
+              width="1710"
+              height="1231"
+              loading="lazy"
+            />
+          </a>
+        </div>
+
+        <div class="tab-content" data-tab-content="swing" role="tabpanel">
+          <a class="shot-box" href="https://github.com/EduMIPS64/edumips64/releases/latest">
+            <img
+              class="light-only"
+              src="/edumips64-1.3.0.png"
+              alt="The EduMIPS64 Swing desktop version showing cycles, registers, statistics, pipeline diagram, memory data and source code panels"
+              width="1710"
+              height="1231"
+              loading="lazy"
+            />
+            <img
+              class="dark-only"
+              src="/edumips64-1.3.0-dark.jpg"
+              alt="The EduMIPS64 Swing desktop version in dark mode showing cycles, registers, statistics, pipeline diagram, memory data and source code panels"
+              width="1710"
+              height="1231"
+              loading="lazy"
+            />
+          </a>
+        </div>
+
         <figcaption>Fig. 1 — The web version at web.edumips.org, mid-execution: pipeline stages highlighted in the source, live statistics and the CPU diagram.</figcaption>
+
+        <script is:inline>
+          // Run client-side to handle tab switching
+          (() => {
+            const buttons = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+            buttons.forEach(btn => {
+              btn.addEventListener('click', () => {
+                const tabName = btn.getAttribute('data-tab');
+                buttons.forEach(b => {
+                  b.classList.toggle('active', b === btn);
+                  b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+                });
+                contents.forEach(c => {
+                  c.classList.toggle('active', c.getAttribute('data-tab-content') === tabName);
+                });
+                const figcaption = document.querySelector('.hero-fig figcaption');
+                if (figcaption) {
+                  if (tabName === 'web') {
+                    figcaption.textContent = 'Fig. 1 — The web version at web.edumips.org, mid-execution: pipeline stages highlighted in the source, live statistics and the CPU diagram.';
+                  } else {
+                    figcaption.textContent = 'Fig. 1 — The native Swing desktop application showing multiple simulator panels: cycles, registers, statistics, pipeline, data and code.';
+                  }
+                }
+              });
+            });
+          })();
+        </script>
       </figure>
     </section>
 
@@ -198,6 +264,65 @@ loop:   daddi    r1, r1, -1
   .hero-fig figcaption { font-family: var(--mono); font-size: 11.5px; color: var(--steel); margin-top: 10px; }
   .shot-box { display: block; border: 1px solid var(--ink); background: var(--panel); }
   .shot-box img { display: block; width: 100%; height: auto; }
+
+  /* Tabs styling */
+  .tabs-buttons-row {
+    display: inline-flex;
+    background: var(--hairline);
+    padding: 3px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid var(--hairline);
+  }
+  :root[data-theme='dark'] .tabs-buttons-row {
+    background: var(--panel);
+  }
+  .tab-btn {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--steel);
+    background: none;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .tab-btn:hover {
+    color: var(--ink);
+  }
+  .tab-btn.active {
+    background: var(--panel);
+    color: var(--red);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  :root[data-theme='dark'] .tab-btn.active {
+    background: var(--hairline);
+    color: var(--red);
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Light/Dark mode images display toggles */
+  .light-only {
+    display: block;
+  }
+  .dark-only {
+    display: none;
+  }
+  :root[data-theme='dark'] .light-only {
+    display: none;
+  }
+  :root[data-theme='dark'] .dark-only {
+    display: block;
+  }
 
   .feature-list { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px 40px; }
   .feature-list h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin-bottom: 6px; }
