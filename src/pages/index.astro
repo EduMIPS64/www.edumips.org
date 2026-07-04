@@ -115,10 +115,29 @@ const noteCount = all.length - releaseCount;
                 }
               });
             });
+
+            // Lightbox logic
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            document.querySelectorAll('a.shot-box').forEach(link => {
+              link.addEventListener('click', (e) => {
+                e.preventDefault();
+                lightboxImg.src = link.getAttribute('href');
+                lightbox.showModal();
+              });
+            });
+            lightbox.addEventListener('click', () => {
+              lightbox.close();
+            });
           })();
         </script>
       </figure>
     </section>
+
+    <!-- Lightbox Dialog -->
+    <dialog id="lightbox" class="lightbox">
+      <img id="lightbox-img" src="" alt="Enlarged screenshot view" />
+    </dialog>
 
     <section class="wrap" id="features">
       <div class="secthead"><span class="num">2</span><h2>Features</h2></div>
@@ -151,7 +170,8 @@ const noteCount = all.length - releaseCount;
         </li>
         <li>
           <h3><span class="fnum">2.6</span>Made for the classroom</h3>
-          <p>Free software (GPL), UI and manuals in English, Italian and Simplified
+          <p>Free software (GPL) that can operate fully off-line with included help. 
+          UI and manuals in English, Italian and Simplified
           Chinese, and an <a href="/edumips64-ieee-tedu.pdf">IEEE Transactions on
           Education paper</a> behind it. Twenty years in Computer Architecture courses.</p>
         </li>
@@ -322,6 +342,29 @@ loop:   daddi    r1, r1, -1
   }
   :global(:root[data-theme='dark']) .dark-only {
     display: block;
+  }
+
+  /* Lightbox styles */
+  .lightbox {
+    border: none;
+    padding: 0;
+    max-width: 95vw;
+    max-height: 95vh;
+    background: transparent;
+    cursor: zoom-out;
+  }
+  .lightbox::backdrop {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    cursor: zoom-out;
+  }
+  .lightbox img {
+    display: block;
+    max-width: 100%;
+    max-height: 95vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   }
 
   .feature-list { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px 40px; }
